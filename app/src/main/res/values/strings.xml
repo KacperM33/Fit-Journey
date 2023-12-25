@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">ProjektPUM</string>
+    <string name="title">FitJourney</string>
+    <string name="desc">Camera button</string>
 </resources>
