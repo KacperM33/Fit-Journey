@@ -2,13 +2,19 @@ package com.example.projektpum
 
 import android.Manifest
 import android.content.ContentValues
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.icu.text.SimpleDateFormat
 import android.os.Bundle
 import android.provider.MediaStore
 import android.widget.Button
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.core.app.ActivityCompat
@@ -17,14 +23,32 @@ import java.util.Date
 import java.util.Locale
 
 
-class MainActivity : ComponentActivity() {
+class MainActivity : ComponentActivity(), SensorEventListener{
     private val camera_permission = 100
     private val storage_permission = 101
+
+    private var sensorManager: SensorManager? = null
+    private var accelerometer: Sensor? = null
+
+    private val STEP_THRESHOLD = 12.0f
+    private var isStepCounting = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContentView(R.layout.layout)
+
+        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        accelerometer = sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+
+        resetSteps()
+
+        if (accelerometer != null) {
+            sensorManager?.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL)
+        } else {
+            // Obsługa braku akcelerometru na urządzeniu
+            Toast.makeText(this, "Device does not have accelerometer.", Toast.LENGTH_SHORT).show()
+        }
 
         findViewById<Button>(R.id.camera_button).setOnClickListener {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
@@ -40,6 +64,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    //  PERMISSIONS
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
@@ -56,6 +81,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    //  CAMERA
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
@@ -68,6 +94,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    // SAVE PHOTOS
     private fun saveImageToMediaStore(imageBitmap: Bitmap) {
         val displayName = "IMG_${SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())}.jpg"
         val mimeType = "image/jpeg"
@@ -85,5 +112,58 @@ class MainActivity : ComponentActivity() {
                 outputStream.flush()
             }
         }
+    }
+
+    // STEP COUNTER
+    override fun onSensorChanged(event: SensorEvent?) {
+        if (event?.sensor?.type == Sensor.TYPE_ACCELEROMETER) {
+            val x = event.values[0]
+            val y = event.values[1]
+            val z = event.values[2]
+
+            val acceleration = Math.abs(x + y + z - SensorManager.GRAVITY_EARTH)
+            if (acceleration > STEP_THRESHOLD) {
+                if (!isStepCounting) {
+                    isStepCounting = true
+                    updateStepCount()
+                }
+            } else {
+                isStepCounting = false
+            }
+        }
+    }
+
+    private fun updateStepCount() {
+        val stepCountTextView = findViewById<TextView>(R.id.steps)
+        val currentStepCount = stepCountTextView.text.toString().toInt()
+        val updatedStepCount = currentStepCount + 1
+
+        stepCountTextView.text = "$updatedStepCount"
+    }
+
+    override fun onPause() {
+        super.onPause()
+        sensorManager?.unregisterListener(this)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        sensorManager?.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL)
+    }
+
+    private fun resetSteps() {
+        findViewById<TextView>(R.id.steps).setOnClickListener{
+            Toast.makeText(this, "Przytrzymaj by zresetować", Toast.LENGTH_SHORT).show()
+        }
+
+        findViewById<TextView>(R.id.steps).setOnLongClickListener {
+            findViewById<TextView>(R.id.steps).text = 0.toString()
+
+            true
+        }
+    }
+
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+//        nie potrzebne
     }
 }
