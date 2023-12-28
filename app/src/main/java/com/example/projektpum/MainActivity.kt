@@ -1,15 +1,13 @@
 package com.example.projektpum
 
 import android.Manifest
+import android.content.BroadcastReceiver
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.hardware.Sensor
-import android.hardware.SensorEvent
-import android.hardware.SensorEventListener
-import android.hardware.SensorManager
 import android.icu.text.SimpleDateFormat
 import android.os.Bundle
 import android.provider.MediaStore
@@ -23,31 +21,25 @@ import java.util.Date
 import java.util.Locale
 
 
-class MainActivity : ComponentActivity(), SensorEventListener{
+class MainActivity : ComponentActivity() {
     private val camera_permission = 100
     private val storage_permission = 101
 
-    private var sensorManager: SensorManager? = null
-    private var accelerometer: Sensor? = null
-
-    private val STEP_THRESHOLD = 12.0f
-    private var isStepCounting = false
+    private var stepCount = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContentView(R.layout.layout)
 
-        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        accelerometer = sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+        val serviceIntent = Intent(this, StepCounter::class.java)
+        startService(serviceIntent)
 
-        resetSteps()
+        registerReceiver(stepReceiver, IntentFilter("step_count_updated"))
 
-        if (accelerometer != null) {
-            sensorManager?.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL)
-        } else {
-            // Obsługa braku akcelerometru na urządzeniu
-            Toast.makeText(this, "Device does not have accelerometer.", Toast.LENGTH_SHORT).show()
+        findViewById<Button>(R.id.music_button).setOnClickListener {
+            val musicIntent = Intent(applicationContext, MusicPlayer::class.java)
+            startActivity(musicIntent)
         }
 
         findViewById<Button>(R.id.camera_button).setOnClickListener {
@@ -115,55 +107,16 @@ class MainActivity : ComponentActivity(), SensorEventListener{
     }
 
     // STEP COUNTER
-    override fun onSensorChanged(event: SensorEvent?) {
-        if (event?.sensor?.type == Sensor.TYPE_ACCELEROMETER) {
-            val x = event.values[0]
-            val y = event.values[1]
-            val z = event.values[2]
-
-            val acceleration = Math.abs(x + y + z - SensorManager.GRAVITY_EARTH)
-            if (acceleration > STEP_THRESHOLD) {
-                if (!isStepCounting) {
-                    isStepCounting = true
-                    updateStepCount()
-                }
-            } else {
-                isStepCounting = false
+    private val stepReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == "step_count_updated") {
+                stepCount = intent.getIntExtra("step_count", stepCount)
+                updateStepCountOnUI()
             }
         }
     }
-
-    private fun updateStepCount() {
+    private fun updateStepCountOnUI() {
         val stepCountTextView = findViewById<TextView>(R.id.steps)
-        val currentStepCount = stepCountTextView.text.toString().toInt()
-        val updatedStepCount = currentStepCount + 1
-
-        stepCountTextView.text = "$updatedStepCount"
-    }
-
-    override fun onPause() {
-        super.onPause()
-        sensorManager?.unregisterListener(this)
-    }
-
-    override fun onResume() {
-        super.onResume()
-        sensorManager?.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL)
-    }
-
-    private fun resetSteps() {
-        findViewById<TextView>(R.id.steps).setOnClickListener{
-            Toast.makeText(this, "Przytrzymaj by zresetować", Toast.LENGTH_SHORT).show()
-        }
-
-        findViewById<TextView>(R.id.steps).setOnLongClickListener {
-            findViewById<TextView>(R.id.steps).text = 0.toString()
-
-            true
-        }
-    }
-
-    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-//        nie potrzebne
+        stepCountTextView.text = stepCount.toString()
     }
 }
