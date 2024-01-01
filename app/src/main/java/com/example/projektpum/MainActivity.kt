@@ -15,27 +15,45 @@ import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
 import java.util.Date
 import java.util.Locale
 
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     private val camera_permission = 100
     private val storage_permission = 101
+    private val location_permission = 103
+    private val location_permission2 = 104
 
     private var stepCount = 0
+
+    private lateinit var myMap: GoogleMap
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        supportActionBar?.hide()
         setContentView(R.layout.layout)
+
+        // to tez do usuniecia jak nie chce resetowania
+        resetSteps()
 
         val serviceIntent = Intent(this, StepCounter::class.java)
         startService(serviceIntent)
 
         registerReceiver(stepReceiver, IntentFilter("step_count_updated"))
+
+        val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
+        mapFragment.getMapAsync(this)
 
         findViewById<Button>(R.id.music_button).setOnClickListener {
             val musicIntent = Intent(applicationContext, MusicPlayer::class.java)
@@ -71,8 +89,20 @@ class MainActivity : ComponentActivity() {
                 Toast.makeText(this, "Uprawnienia do folderu są wymagane.", Toast.LENGTH_SHORT).show()
             }
         }
-    }
 
+        if (requestCode == location_permission) {
+            if (grantResults.isNotEmpty() && grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Uprawnienia do lokalizacji są wymagane.", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        if (requestCode == location_permission2) {
+            if (grantResults.isNotEmpty() && grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Uprawnienia do lokalizacji są wymagane.", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+//<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     //  CAMERA
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -118,5 +148,36 @@ class MainActivity : ComponentActivity() {
     private fun updateStepCountOnUI() {
         val stepCountTextView = findViewById<TextView>(R.id.steps)
         stepCountTextView.text = stepCount.toString()
+    }
+    private fun resetSteps() {
+        findViewById<TextView>(R.id.steps).setOnClickListener{
+            Toast.makeText(this, "Przytrzymaj by zresetować", Toast.LENGTH_SHORT).show()
+        }
+
+        findViewById<TextView>(R.id.steps).setOnLongClickListener {
+            stepCount = 0
+
+            // linijka do usuniecia jak nie chce resetowania
+            StepCounter().resetStepCount()
+            // ======
+
+            findViewById<TextView>(R.id.steps).text = StepCounter().stepCount.toString()
+
+            true
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        unregisterReceiver(stepReceiver)
+    }
+
+    override fun onMapReady(googleMap: GoogleMap) {
+        myMap = googleMap
+
+        val sydney = LatLng(-34.0, 151.0)
+        myMap.addMarker(MarkerOptions().position(sydney).title("Marker in Sydney"))
+        myMap.moveCamera(CameraUpdateFactory.newLatLng(sydney))
     }
 }

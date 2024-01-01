@@ -8,6 +8,8 @@ import android.widget.Button
 class MusicPlayer : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        supportActionBar?.hide()
         setContentView(R.layout.activity_music)
 
         findViewById<Button>(R.id.back_button).setOnClickListener {

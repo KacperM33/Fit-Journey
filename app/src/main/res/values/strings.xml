@@ -2,4 +2,5 @@
     <string name="app_name">ProjektPUM</string>
     <string name="title">FitJourney</string>
     <string name="desc">Camera button</string>
+    <string name="map_api_key">AIzaSyCzqSFBVMFAFLewldCWOSxIQVt--dOs_0Q</string>
 </resources>
