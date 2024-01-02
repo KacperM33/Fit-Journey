@@ -9,6 +9,7 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.icu.text.SimpleDateFormat
+import android.location.Location
 import android.os.Bundle
 import android.provider.MediaStore
 import android.widget.Button
@@ -18,6 +19,8 @@ import androidx.activity.ComponentActivity
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -37,6 +40,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     private var stepCount = 0
 
     private lateinit var myMap: GoogleMap
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,6 +58,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         findViewById<Button>(R.id.music_button).setOnClickListener {
             val musicIntent = Intent(applicationContext, MusicPlayer::class.java)
@@ -95,14 +101,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                 Toast.makeText(this, "Uprawnienia do lokalizacji są wymagane.", Toast.LENGTH_SHORT).show()
             }
         }
-
-        if (requestCode == location_permission2) {
-            if (grantResults.isNotEmpty() && grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(this, "Uprawnienia do lokalizacji są wymagane.", Toast.LENGTH_SHORT).show()
-            }
-        }
     }
-//<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
     //  CAMERA
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -173,11 +173,34 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         unregisterReceiver(stepReceiver)
     }
 
+    // MAPS
     override fun onMapReady(googleMap: GoogleMap) {
         myMap = googleMap
+//        val currentLatLng: LatLng? = null
 
-        val sydney = LatLng(-34.0, 151.0)
-        myMap.addMarker(MarkerOptions().position(sydney).title("Marker in Sydney"))
-        myMap.moveCamera(CameraUpdateFactory.newLatLng(sydney))
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        ) {
+            // Pobieranie obecnej lokalizacji
+            fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
+                if (location != null) {
+                        val currentLatLng = LatLng(location.latitude, location.longitude)
+                        myMap.addMarker(MarkerOptions().position(currentLatLng).title("My Location"))
+                        myMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 16.5f))
+                    }
+                }
+        } else {
+            // Jeśli nie masz uprawnień, poproś użytkownika o nie
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), location_permission)
+        }
+
+        findViewById<Button>(R.id.resetC_button).setOnClickListener {
+            fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
+                if (location != null) {
+                    val currentLatLng = LatLng(location.latitude, location.longitude)
+                    myMap.addMarker(MarkerOptions().position(currentLatLng).title("My Location"))
+                    myMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 16.5f))
+                }
+            }
+        }
     }
 }

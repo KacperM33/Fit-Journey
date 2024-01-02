@@ -27,8 +27,6 @@ class StepCounter : Service(), SensorEventListener{
     private var isStepCounting = false
     var stepCount = 0
 
-    private var isListening = true
-
     override fun onBind(intent: Intent?): IBinder? {
         return null
     }
@@ -53,7 +51,7 @@ class StepCounter : Service(), SensorEventListener{
     }
 
     override fun onSensorChanged(event: SensorEvent?) {
-        if (isListening && event?.sensor?.type == Sensor.TYPE_ACCELEROMETER) {
+        if (event?.sensor?.type == Sensor.TYPE_ACCELEROMETER) {
             val x = event.values[0]
             val y = event.values[1]
             val z = event.values[2]
