@@ -11,10 +11,5 @@ class MusicPlayer : AppCompatActivity() {
 
         supportActionBar?.hide()
         setContentView(R.layout.activity_music)
-
-        findViewById<Button>(R.id.back_button).setOnClickListener {
-            val musicIntent = Intent(applicationContext, MainActivity::class.java)
-            startActivity(musicIntent)
-        }
     }
 }

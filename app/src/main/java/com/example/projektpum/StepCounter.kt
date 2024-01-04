@@ -16,14 +16,13 @@ import android.os.IBinder
 import android.util.Log
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 
 class StepCounter : Service(), SensorEventListener{
 
     private var sensorManager: SensorManager? = null
     private var accelerometer: Sensor? = null
 
-    private val STEP_THRESHOLD = 12.0f
+    private val STEP_THRESHOLD = 25.0f
     private var isStepCounting = false
     var stepCount = 0
 
