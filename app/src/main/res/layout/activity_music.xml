@@ -11,47 +11,81 @@
         android:id="@+id/music_TV"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="184dp"
+        android:layout_marginTop="25dp"
+        android:layout_marginBottom="25dp"
         android:fontFamily="monospace"
-        android:text="TextView"
-        android:textColor="#000000"
-        android:textSize="30sp"
+        android:text=""
+        android:textColor="#FFFFFF"
+        android:textSize="25sp"
+        android:gravity="center"
+        app:layout_constraintBottom_toTopOf="@+id/seekBar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/songlistView" />
 
-    <Button
-        android:id="@+id/play_BT"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:layout_marginStart="20dp"
-        android:layout_marginEnd="20dp"
-        android:layout_marginBottom="310dp"
-        android:text="Play"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <Button
+    <ToggleButton
         android:id="@+id/pause_BT"
         android:layout_width="80dp"
         android:layout_height="80dp"
-        android:layout_marginEnd="42dp"
-        android:layout_marginBottom="310dp"
-        android:text="Pause"
+        android:layout_marginStart="33dp"
+        android:layout_marginEnd="33dp"
+        android:layout_marginBottom="40dp"
+        android:background="@drawable/play_btn"
+        android:textOff=""
+        android:textOn=""
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/next_BT"
+        app:layout_constraintStart_toEndOf="@+id/prev_BT" />
+
+    <Button
+        android:id="@+id/prev_BT"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_marginStart="44dp"
+        android:layout_marginBottom="40dp"
+        android:text=""
+        android:background="@drawable/prev_btn"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/next_BT"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_marginEnd="44dp"
+        android:layout_marginBottom="40dp"
+        android:text=""
+        android:background="@drawable/next_btn"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <Button
-        android:id="@+id/stop_BT"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:layout_marginStart="42dp"
-        android:layout_marginTop="3dp"
-        android:layout_marginBottom="310dp"
-        android:text="Stop"
-        app:layout_constraintBottom_toBottomOf="parent"
+    <SeekBar
+        android:id="@+id/seekBar"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="46dp"
+        android:layout_marginEnd="46dp"
+        android:layout_marginBottom="36dp"
+        android:progress="0"
+        app:layout_constraintBottom_toTopOf="@+id/pause_BT"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/play_BT" />
+        android:progressTint="#FFBB5C"
+        android:thumbTint="#FF9F1C" />
+
+    <ListView
+        android:id="@+id/songlistView"
+        android:layout_width="386dp"
+        android:layout_height="519dp"
+        android:layout_marginStart="1dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="1dp"
+        app:layout_constraintBottom_toTopOf="@+id/music_TV"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

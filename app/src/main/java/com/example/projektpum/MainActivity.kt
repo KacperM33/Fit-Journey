@@ -41,11 +41,11 @@ import java.util.Locale
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     private val camera_permission = 100
-    private val storage_permission = 101
+    private val write_storage_permission = 101
+    private val read_storage_permission = 102
     private val location_permission = 103
 
     private var stepCount = 0
-
     private lateinit var myMap: GoogleMap
     private lateinit var fusedLocationClient: FusedLocationProviderClient
 
@@ -78,6 +78,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         }
 
         findViewById<Button>(R.id.music_button).setOnClickListener {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), read_storage_permission)
+            }
+
             val musicIntent = Intent(applicationContext, MusicPlayer::class.java)
             startActivity(musicIntent)
         }
@@ -88,7 +92,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             }
 
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), storage_permission)
+                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), write_storage_permission)
             }
 
             val intentCapture = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
@@ -106,7 +110,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         }
 
-        if (requestCode == storage_permission) {
+        if (requestCode == write_storage_permission) {
+            if (grantResults.isNotEmpty() && grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Uprawnienia do folderu są wymagane.", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        if (requestCode == read_storage_permission) {
             if (grantResults.isNotEmpty() && grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(this, "Uprawnienia do folderu są wymagane.", Toast.LENGTH_SHORT).show()
             }
