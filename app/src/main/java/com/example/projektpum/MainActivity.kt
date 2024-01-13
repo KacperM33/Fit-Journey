@@ -13,8 +13,12 @@ import android.graphics.Color
 import android.icu.text.SimpleDateFormat
 import android.location.Location
 import android.os.Bundle
+import android.os.CountDownTimer
+import android.os.Environment
+import android.os.Handler
 import android.provider.MediaStore
 import android.util.Log
+import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
@@ -35,6 +39,8 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.Polyline
 import com.google.android.gms.maps.model.PolylineOptions
+import kotlinx.coroutines.delay
+import java.io.File
 import java.util.Date
 import java.util.Locale
 
@@ -56,6 +62,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     private var lastLocation: LatLng? = null
     private var totalDistanceInMeters = 0.0
 
+    private var isStopwatchRunning = false
+    private var elapsedTimeMillis: Long = 0
+    private val handler = Handler()
+    var mins = 0
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -71,6 +82,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
         findViewById<Button>(R.id.start_button).setOnClickListener {
             startRecording()
+            startStopwatch()
         }
 
         findViewById<Button>(R.id.stop_button).setOnClickListener {
@@ -84,6 +96,15 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
             val musicIntent = Intent(applicationContext, MusicPlayer::class.java)
             startActivity(musicIntent)
+        }
+
+        findViewById<Button>(R.id.gallery_button).setOnClickListener {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), read_storage_permission)
+            }
+
+            val galleryIntent = Intent(applicationContext, GalleryActivity::class.java)
+            startActivity(galleryIntent)
         }
 
         findViewById<Button>(R.id.camera_button).setOnClickListener {
@@ -144,11 +165,20 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
     // SAVE PHOTOS
     private fun saveImageToMediaStore(imageBitmap: Bitmap) {
+        val folderName = "FitJourney"
+
+        // Utwórz katalog, jeśli nie istnieje
+        val folder = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), folderName)
+        if (!folder.exists()) {
+            folder.mkdirs()
+        }
+
         val displayName = "IMG_${SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())}.jpg"
         val mimeType = "image/jpeg"
         val contentValues = ContentValues().apply {
             put(MediaStore.Images.Media.DISPLAY_NAME, displayName)
             put(MediaStore.Images.Media.MIME_TYPE, mimeType)
+            put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/$folderName/")
         }
 
         val resolver = contentResolver
@@ -174,12 +204,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun updateStepCountOnUI() {
         val stepCountTextView = findViewById<TextView>(R.id.steps)
         stepCountTextView.text = stepCount.toString()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-
-        unregisterReceiver(stepReceiver)
     }
 
     // MAPS
@@ -214,6 +238,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private fun startRecording() {
         isRecording = true
+        findViewById<Button>(R.id.start_button).setBackgroundResource(R.drawable.rounded_btn2)
         val serviceIntent = Intent(this, StepCounter::class.java)
         startService(serviceIntent)
     }
@@ -227,6 +252,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             isRecording = false
             myMap.clear()
             StepCounter().resetStepCount()
+            finish()
         }
 
         builder.setNegativeButton("Nie") { dialog, which ->
@@ -301,5 +327,42 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         val formattedDistance = String.format("%.2f km", distanceKm)
 
         findViewById<TextView>(R.id.km).text = formattedDistance
+    }
+
+    // TIMER
+    private val stopwatchRunnable = object : Runnable {
+        override fun run() {
+            if (isStopwatchRunning) {
+                elapsedTimeMillis += 1000
+                updateStopwatchText()
+                handler.postDelayed(this, 1000)
+            }
+        }
+    }
+
+    fun startStopwatch() {
+        if (!isStopwatchRunning) {
+            isStopwatchRunning = true
+
+            // Uruchom stoper
+            handler.postDelayed(stopwatchRunnable, 1000)
+        }
+    }
+
+    private fun updateStopwatchText() {
+        val seconds = elapsedTimeMillis / 1000
+        if (seconds == 59.toLong()){
+            elapsedTimeMillis = 0
+            mins++
+        }
+        val formattedTime = "$mins min $seconds s"
+        findViewById<TextView>(R.id.time).text = formattedTime
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        unregisterReceiver(stepReceiver)
+        handler.removeCallbacks(stopwatchRunnable)
     }
 }

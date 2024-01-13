@@ -94,7 +94,6 @@ class StepCounter : Service(), SensorEventListener{
             .setContentIntent(pendingIntent).build()
     }
 
-    // do usuniecia jak nie chce resetowania (do edycji)
     fun resetStepCount() {
         stepCount = 0
         broadcastStepCount(applicationContext)
