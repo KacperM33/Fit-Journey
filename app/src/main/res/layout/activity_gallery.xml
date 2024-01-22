@@ -21,26 +21,26 @@
 
     <Button
         android:id="@+id/next_button"
-        android:layout_width="wrap_content"
+        android:layout_width="100dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="60dp"
         android:layout_marginEnd="48dp"
         android:layout_marginBottom="150dp"
         android:background="@drawable/rounded_btn"
-        android:text="Next"
+        android:text="Następne"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/prev_button" />
 
     <Button
         android:id="@+id/prev_button"
-        android:layout_width="wrap_content"
+        android:layout_width="100dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="48dp"
         android:layout_marginEnd="60dp"
-        android:layout_marginBottom="150dp"
+        android:layout_marginBottom="148dp"
         android:background="@drawable/rounded_btn"
-        android:text="Prev"
+        android:text="Poprzednie"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/next_button"
         app:layout_constraintStart_toStartOf="parent" />

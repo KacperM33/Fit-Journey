@@ -12,6 +12,9 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import android.icu.text.SimpleDateFormat
 import android.location.Location
+import android.location.LocationManager
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.os.Environment
@@ -72,6 +75,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
         supportActionBar?.hide()
         setContentView(R.layout.layout)
+
+        if (!isInternetAvailable(this)) {
+            showToast("Brak dostępu do Internetu.")
+        }
+
+        if (!isLocationEnabled(this)) {
+            showToast("Brak dostępu do lokalizacji.")
+        }
 
         registerReceiver(stepReceiver, IntentFilter("step_count_updated"))
 
@@ -208,6 +219,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
     // MAPS
     override fun onMapReady(googleMap: GoogleMap) {
+        if (!isInternetAvailable(this)) {
+            showToast("Brak dostępu do Internetu.")
+        }
+
+        if (!isLocationEnabled(this)) {
+            showToast("Brak dostępu do lokalizacji.")
+        }
+
         myMap = googleMap
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -227,6 +246,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         startLocationUpdates()
 
         findViewById<Button>(R.id.resetC_button).setOnClickListener {
+            if (!isInternetAvailable(this)) {
+                showToast("Brak dostępu do Internetu.")
+            }
+
+            if (!isLocationEnabled(this)) {
+                showToast("Brak dostępu do lokalizacji.")
+            }
+
             fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
                 if (location != null) {
                     val currentLatLng = LatLng(location.latitude, location.longitude)
@@ -237,6 +264,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun startRecording() {
+        if (!isInternetAvailable(this)) {
+            showToast("Brak dostępu do Internetu.")
+        }
+
+        if (!isLocationEnabled(this)) {
+            showToast("Brak dostępu do lokalizacji.")
+        }
+
         isRecording = true
         findViewById<Button>(R.id.start_button).setBackgroundResource(R.drawable.rounded_btn2)
         val serviceIntent = Intent(this, StepCounter::class.java)
@@ -264,6 +299,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private fun drawPolyline() {
         // Rysuj linię na mapie
+        if (!isInternetAvailable(this)) {
+            showToast("Brak dostępu do Internetu.")
+        }
+
+        if (!isLocationEnabled(this)) {
+            showToast("Brak dostępu do lokalizacji.")
+        }
+
         if (pathPoints.size >= 2) {
             polyline = myMap.addPolyline(PolylineOptions().addAll(pathPoints).color(Color.parseColor("#5F00BA")).width(10.0f))
         }
@@ -271,6 +314,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
     // Funkcja wywoływana przy każdej aktualizacji lokalizacji
     private fun updateLocation(location: LatLng) {
+        if (!isInternetAvailable(this)) {
+            showToast("Brak dostępu do Internetu.")
+        }
+
+        if (!isLocationEnabled(this)) {
+            showToast("Brak dostępu do lokalizacji.")
+        }
+
         if (isRecording) {
             // Dodaj aktualną lokalizację do listy
             pathPoints.add(location)
@@ -297,6 +348,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun startLocationUpdates() {
+        if (!isInternetAvailable(this)) {
+            showToast("Brak dostępu do Internetu.")
+        }
+
+        if (!isLocationEnabled(this)) {
+            showToast("Brak dostępu do lokalizacji.")
+        }
+
         val locationRequest = LocationRequest.create().setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY).setInterval(1000) // Interwał aktualizacji w milisekundach
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -357,6 +416,27 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         }
         val formattedTime = "$mins min $seconds s"
         findViewById<TextView>(R.id.time).text = formattedTime
+    }
+
+    // ERRORS
+    fun isInternetAvailable(context: Context): Boolean {
+        val connectivityManager =
+            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+
+        val network = connectivityManager.activeNetwork
+        val networkCapabilities = connectivityManager.getNetworkCapabilities(network)
+
+        return networkCapabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
+    }
+
+    fun isLocationEnabled(context: Context): Boolean {
+        val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
+                locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+    }
+
+    fun showToast(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 
     override fun onDestroy() {
