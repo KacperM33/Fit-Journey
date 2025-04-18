@@ -11,27 +11,38 @@ This project was completed as the final assignment for the *Mobile Device Progra
 - Android 10
 
 ## 🖼️ User Interface
-The main screen displays a real-time map of your route, buttons to start and stop route tracking, step count, and quick access to music and camera functions — all in one place for maximum convenience during workouts.
 
-<div align="center">
-  <table>
-    <tr>
-      <td align="center">
-        <img src="https://github.com/user-attachments/assets/40a851fe-e9dc-44c2-9f4b-b4044fded0d0" alt="Fit Journey Main UI" width="200"/><br/>
-        <sub>Main screen</sub>
-      </td>
-      <td>&nbsp;&nbsp;&nbsp;</td>
-      <td align="center">
-        <img src="https://github.com/user-attachments/assets/12c8cbb0-d3ca-4146-8340-c2b015be5954" alt="Fit Journey Music UI" width="200"/><br/>
-        <sub>Music controls</sub>
-      </td>
-      <td>&nbsp;&nbsp;&nbsp;</td>
-      <td align="center">
-        <img src="https://github.com/user-attachments/assets/2598dfa1-5b8b-43fc-91e1-c722a6ea8537" alt="Fit Journey Gallery UI" width="200"/><br/>
-        <sub>Photo gallery</sub>
-      </td>
-    </tr>
-  </table>
+### 🔸 Main Screen
+
+<img src="https://github.com/user-attachments/assets/3a1f1627-767f-426a-b928-23ac5d078fc5" width="300" align="center" />
+
+<br>The main screen displays a real-time map of user's current location, along with navigation buttons — all in one place for maximum convenience during workouts. 
+<br>By pressing the **"WYŚRODKUJ"** button, the user can center the map view on their current position. Pressing **"START"** begins tracking the route - the app starts counting steps, calculating the distance traveled (in kilometers), and drawing a path line on the map. The **"STOP"** button stops counting, distance tracking, and path drawing.<br>
+From this view, the user can also access three additional views:
+- Top-left corner - **Note Icon**: Opens the **Music Controls** view
+- Top-right corner - **"GALERIA"** button: Opens the **Photo Gallery** view
+- Bottom-middle - **Camera Icon**: Opens the **Camera** view
+
+### 🔸 Music controls
+
+<img src="https://github.com/user-attachments/assets/12c8cbb0-d3ca-4146-8340-c2b015be5954" width="300" align="center" />
+
+<br>Displays a lists of music tracks and artists on the device.
+<br>The user can play selected songs and control playback using the buttons at the bottom of the screen. The view also shows the current track title and a progress bar.
+
+### 🔸 Photo gallery
+
+<img src="https://github.com/user-attachments/assets/2598dfa1-5b8b-43fc-91e1-c722a6ea8537" width="300" align="center" />
+
+<br>Displays the most recently taken photo using the app.
+<br>The user can browse through other photos taken with the in-app camera using **"PREV"** and **"NEXT"** buttons to navigate through the gallery.
+
+### 🔸 Camera
+
+<img src="https://github.com/user-attachments/assets/fb39061d-65c5-4da4-9372-c19b881e06f4" width="300" align="center" />
+
+<br>A simple view showing the live camera feed from the device, allowing the user to take photos within the app.
+
 </div>
 
 
